@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+#build/
+.pdm-build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.idea
+
+# Environment files
+.env
+.env.local
+
+# TMP
+.tmp/
+*tmp/
+
+# Internal
+.internal/
