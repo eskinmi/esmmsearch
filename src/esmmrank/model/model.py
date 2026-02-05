@@ -37,7 +37,7 @@ class TwoTowerESMM(nn.Module):
 
         self.feature_interaction = FeatureInteraction(config.user_tower.output_dim)
 
-        shared_input_dim = (
+        shared_input_dim = int(
             self.feature_interaction.output_dim + self.context_encoder.output_dim
         )
 

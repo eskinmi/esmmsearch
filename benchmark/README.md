@@ -67,7 +67,7 @@ uv run esmmrank --data expedia --data-dir benchmark/dataset/processed \
 
 ## Results
 
-### Baseline (10% sample, 5 epochs)
+### Initial Iteration
 
 | Metric       | Score  |
 |--------------|--------|
@@ -75,22 +75,6 @@ uv run esmmrank --data expedia --data-dir benchmark/dataset/processed \
 | NDCG@10      | `0.4996` |
 | CTR PR-AUC   | `0.1617` |
 
-## Directory Structure
-
-```
-benchmark/
-├── README.md
-├── bin/
-│   └── preprocess.py      # Data preprocessing script
-└── dataset/
-    ├── train.csv          # Raw training data (~10M rows)
-    ├── test.csv           # Raw test data (no labels)
-    └── processed/         # Preprocessed .npy files
-        ├── train/
-        ├── val/
-        ├── test/
-        └── mappings.npy
-```
 
 ## Feature Mapping
 

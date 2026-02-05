@@ -3,15 +3,7 @@ import torch
 import numpy as np
 from sklearn.metrics import average_precision_score
 
-
-@dataclass
-class Constants:
-
-    w_ctr = 1.0
-    w_cvr = 5.0
-
-
-constants = Constants()
+from .constant import CTR_WEIGHT, CTCVR_WEIGHT
 
 
 def dcg_at_k(relevances: np.ndarray, k: int) -> float:
@@ -209,7 +201,7 @@ class MetricsCalculator:
         ctcvr_labels = torch.cat(self.ctcvr_labels)
         group_ids = torch.cat(self.group_ids)
 
-        w_labels = ctcvr_labels * constants.w_cvr + ctr_labels * (constants.w_ctr - ctcvr_labels)
+        w_labels = ctcvr_labels * CTCVR_WEIGHT + ctr_labels * (CTR_WEIGHT - ctcvr_labels)
 
         metrics = {
             "ctr_prauc": compute_prauc(ctr_preds, ctr_labels),

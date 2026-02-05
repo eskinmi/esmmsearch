@@ -81,7 +81,7 @@ class MLPBlock(nn.Module):
             "leaky_relu": nn.LeakyReLU,
         }[activation]
 
-        layers = []
+        layers = list()
         prev_dim = input_dim
 
         for hidden_dim in hidden_dims:
@@ -132,6 +132,6 @@ class FeatureInteraction(nn.Module):
         torch.Tensor
             Interaction features of shape (batch_size, representation_dim * 4).
         """
-        element_product = user_repr * hotel_repr
-        element_diff = user_repr - hotel_repr
-        return torch.cat([user_repr, hotel_repr, element_product, element_diff], dim=-1)
+        cross_repr = user_repr * hotel_repr
+        delta = user_repr - hotel_repr
+        return torch.cat([user_repr, hotel_repr, cross_repr, delta], dim=-1)

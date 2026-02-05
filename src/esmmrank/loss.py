@@ -97,7 +97,7 @@ class ESMMLoss(nn.Module):
         gamma: float = 2.0,
         alpha: float = 0.25,
         ctr_weight: float = 1.0,
-        ctcvr_weight: float = 1.0,
+        ctcvr_weight: float = 5.0,
     ):
         super().__init__()
         self.ctr_loss_fn = FocalLoss(gamma=gamma, alpha=alpha)
