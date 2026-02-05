@@ -17,6 +17,8 @@ benchmark-train:
 	echo "Run UUID: $$UUID"; \
 	echo "To view TensorBoard for this run, run:"; \
 	echo "  tensorboard --logdir runs/$$UUID"; \
+	ESMM_CTR_LOSS_WEIGHT=1.0; \
+	ESMM_CTCVR_LOSS_WEIGHT=5.0; \
 	uv run esmmrank --data expedia --data-dir benchmark/dataset/processed \
 		--epochs 10 --lr 0.0005 --batch-size 512 \
 		--log-path benchmark/log_$$UUID.json \
