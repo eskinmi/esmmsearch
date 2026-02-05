@@ -201,7 +201,7 @@ class MetricsCalculator:
         ctcvr_labels = torch.cat(self.ctcvr_labels)
         group_ids = torch.cat(self.group_ids)
 
-        w_labels = ctcvr_labels * self.ctcvr_labels + ctr_labels * (self.ctr_loss_weight - ctcvr_labels)  # noqa
+        w_labels = ctcvr_labels * self.ctcvr_loss_weight + ctr_labels * (self.ctr_loss_weight - ctcvr_labels)
 
         metrics = {
             "ctr_prauc": compute_prauc(ctr_preds, ctr_labels),
