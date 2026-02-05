@@ -108,7 +108,10 @@ class Trainer:
             mode="max",
         )
 
-        self.metrics = MetricsCalculator()
+        self.metrics = MetricsCalculator(
+            ctr_loss_weight=config.ctr_loss_weight,
+            ctcvr_loss_weight=config.ctcvr_loss_weight
+        )
         self.best_model_state: dict | None = None
 
     def train_epoch(self, train_loader: DataLoader) -> dict[str, float]:

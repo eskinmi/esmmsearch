@@ -3,8 +3,6 @@ import torch
 import numpy as np
 from sklearn.metrics import average_precision_score
 
-from .constant import CTR_WEIGHT, CTCVR_WEIGHT
-
 
 def dcg_at_k(relevances: np.ndarray, k: int) -> float:
     """
@@ -137,7 +135,9 @@ class MetricsCalculator:
     Designed for batch-wise accumulation during evaluation.
     """
 
-    def __init__(self):
+    def __init__(self, ctr_loss_weight: float = 1.0, ctcvr_loss_weight: float = 5.0):
+        self.ctr_loss_weight = ctr_loss_weight
+        self.ctcvr_loss_weight = ctcvr_loss_weight
         self.reset()
 
     def reset(self):
@@ -201,7 +201,7 @@ class MetricsCalculator:
         ctcvr_labels = torch.cat(self.ctcvr_labels)
         group_ids = torch.cat(self.group_ids)
 
-        w_labels = ctcvr_labels * CTCVR_WEIGHT + ctr_labels * (CTR_WEIGHT - ctcvr_labels)
+        w_labels = ctcvr_labels * self.ctcvr_labels + ctr_labels * (self.ctr_loss_weight - ctcvr_labels)  # noqa
 
         metrics = {
             "ctr_prauc": compute_prauc(ctr_preds, ctr_labels),
