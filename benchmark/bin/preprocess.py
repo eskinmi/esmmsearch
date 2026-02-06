@@ -92,16 +92,45 @@ def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
 
+    # Missingness indicators (before filling)
+    df["has_visitor_history"] = df["visitor_hist_starrating"].notna().astype(np.float32)
+    df["has_location_score2"] = df["prop_location_score2"].notna().astype(np.float32)
+    df["has_review_score"] = (df["prop_review_score"].fillna(0) > 0).astype(np.float32)
+    df["has_affinity_score"] = df["srch_query_affinity_score"].notna().astype(np.float32)
+
+    # Derived: star preference match
+    df["star_diff"] = (
+        df["visitor_hist_starrating"] - df["prop_starrating"]
+    ).abs().fillna(0)
+
+    # Competitor summary features
+    comp_rate_cols = [f"comp{i}_rate" for i in range(1, 9)]
+    comp_inv_cols = [f"comp{i}_inv" for i in range(1, 9)]
+    df["n_competitors_cheaper"] = (
+        df[comp_rate_cols].eq(-1).sum(axis=1).astype(np.float32)
+    )
+    df["n_competitors_available"] = (
+        df[comp_inv_cols].notna().sum(axis=1).astype(np.float32)
+    )
+
+    # Fill NAs with medians (not 0)
     df["prop_review_score"] = df["prop_review_score"].fillna(0)
     df["prop_location_score2"] = df["prop_location_score2"].fillna(
         df["prop_location_score2"].median()
     )
-    df["visitor_hist_starrating"] = df["visitor_hist_starrating"].fillna(0)
-    df["visitor_hist_adr_usd"] = df["visitor_hist_adr_usd"].fillna(0)
-    df["orig_destination_distance"] = df["orig_destination_distance"].fillna(0)
-    df["srch_query_affinity_score"] = df["srch_query_affinity_score"].fillna(0)
+    hist_star_median = df.loc[df["visitor_hist_starrating"].notna(), "visitor_hist_starrating"].median()
+    hist_adr_median = df.loc[df["visitor_hist_adr_usd"].notna(), "visitor_hist_adr_usd"].median()
+    dist_median = df.loc[df["orig_destination_distance"].notna(), "orig_destination_distance"].median()
+    aff_min = df["srch_query_affinity_score"].min()
 
-    df["price_usd"] = np.log1p(df["price_usd"].clip(lower=0))
+    df["visitor_hist_starrating"] = df["visitor_hist_starrating"].fillna(hist_star_median)
+    df["visitor_hist_adr_usd"] = df["visitor_hist_adr_usd"].fillna(hist_adr_median)
+    df["orig_destination_distance"] = df["orig_destination_distance"].fillna(dist_median)
+    df["srch_query_affinity_score"] = df["srch_query_affinity_score"].fillna(aff_min)
+
+    # Price: clip extreme outliers at P99.9, then log transform
+    price_cap = df["price_usd"].quantile(0.999)
+    df["price_usd"] = np.log1p(df["price_usd"].clip(lower=0, upper=price_cap))
     df["visitor_hist_adr_usd"] = np.log1p(df["visitor_hist_adr_usd"].clip(lower=0))
     df["orig_destination_distance"] = np.log1p(
         df["orig_destination_distance"].clip(lower=0)
@@ -226,6 +255,8 @@ def extract_features(df: pd.DataFrame) -> dict[str, np.ndarray]:
             df["srch_room_count"].values,
             df["srch_length_of_stay"].values,
             df["srch_booking_window"].values,
+            df["has_visitor_history"].values,
+            df["star_diff"].values,
         ]
     ).astype(np.float32)
 
@@ -246,6 +277,11 @@ def extract_features(df: pd.DataFrame) -> dict[str, np.ndarray]:
             df["price_usd"].values,
             df["orig_destination_distance"].values,
             df["srch_query_affinity_score"].values,
+            df["has_review_score"].values,
+            df["has_location_score2"].values,
+            df["has_affinity_score"].values,
+            df["n_competitors_cheaper"].values,
+            df["n_competitors_available"].values,
         ]
     ).astype(np.float32)
 
@@ -271,6 +307,7 @@ def extract_features(df: pd.DataFrame) -> dict[str, np.ndarray]:
         "click_labels": df["click_bool"].values.astype(np.float32),
         "booking_labels": df["booking_bool"].values.astype(np.float32),
         "session_ids": df["srch_id"].values,
+        "positions": df["position"].values.astype(np.int32),
     }
 
 
