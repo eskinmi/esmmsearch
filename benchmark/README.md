@@ -65,15 +65,16 @@ uv run esmmrank --data expedia --data-dir benchmark/dataset/processed \
     --epochs 20 --lr 0.0005 --batch-size 512
 ```
 
-## Results
+## Best Results
 
-### Initial Iteration
+> [!NOTE]
+> The scores are calculated as proposed in the competition, with relevance weights.
 
 | Metric  | Score    |
 |---------|----------|
-| NDCG@38 | `0.5270` |
-| NDCG@10 | `0.4743` |
-| PR-AUC  | `0.1635` |
+| NDCG@38 | `0.5333` |
+| NDCG@10 | `0.4811` |
+| PR-AUC  | `0.1659` |
 
 
 ## Feature Mapping
