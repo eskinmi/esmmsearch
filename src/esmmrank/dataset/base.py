@@ -122,4 +122,7 @@ def collate_fn(batch: list[dict]) -> dict:
             [s["conversion_label"] for s in batch], dtype=torch.float32
         ),
         "session_ids": torch.tensor([s["session_id"] for s in batch], dtype=torch.long),
+        "positions": torch.tensor(
+            [s.get("position", 1) for s in batch], dtype=torch.long
+        ),
     }

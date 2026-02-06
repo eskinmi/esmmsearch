@@ -30,6 +30,12 @@ class ExpediaDataset(Dataset):
         self.booking_labels = np.load(self.data_dir / "booking_labels.npy")
         self.session_ids = np.load(self.data_dir / "session_ids.npy")
 
+        positions_path = self.data_dir / "positions.npy"
+        self.positions = (
+            np.load(positions_path) if positions_path.exists()
+            else np.ones(len(self.click_labels), dtype=np.int32)
+        )
+
     def _load_categorical(self, prefix: str) -> dict[str, np.ndarray]:
         """Load all categorical feature arrays with given prefix."""
         features = {}
@@ -54,6 +60,7 @@ class ExpediaDataset(Dataset):
             "click_label": self.click_labels[idx],
             "conversion_label": self.booking_labels[idx],
             "session_id": self.session_ids[idx],
+            "position": self.positions[idx],
         }
 
 
@@ -124,7 +131,7 @@ def get_expedia_feature_config() -> dict:
             "visitor_location_country_id": 250,
             "site_id": 50,
         },
-        "user_numerical_dim": 7,
+        "user_numerical_dim": 9,
         "hotel_categorical_dims": {
             "prop_id": 150000,
             "prop_country_id": 250,
@@ -132,7 +139,7 @@ def get_expedia_feature_config() -> dict:
             "prop_brand_bool": 2,
             "promotion_flag": 2,
         },
-        "hotel_numerical_dim": 7,
+        "hotel_numerical_dim": 12,
         "context_categorical_dims": {
             "srch_destination_id": 50000,
             "srch_saturday_night_bool": 2,

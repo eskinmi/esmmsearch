@@ -27,6 +27,6 @@ benchmark-train:
 
 # Clean benchmark data
 benchmark-clean:
-	rm -rf benchmark/dataset/
+	rm -rf benchmark/dataset/*  # ignore .gitkeep
 	rm -f benchmark/expedia-personalized-sort.zip
 	@echo "Benchmark data cleaned"
