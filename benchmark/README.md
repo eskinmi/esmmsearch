@@ -69,11 +69,11 @@ uv run esmmrank --data expedia --data-dir benchmark/dataset/processed \
 
 ### Initial Iteration
 
-| Metric       | Score  |
-|--------------|--------|
-| NDCG@38      | `0.5440` |
-| NDCG@10      | `0.4996` |
-| CTR PR-AUC   | `0.1617` |
+| Metric  | Score    |
+|---------|----------|
+| NDCG@38 | `0.5270` |
+| NDCG@10 | `0.4743` |
+| PR-AUC  | `0.1635` |
 
 
 ## Feature Mapping
