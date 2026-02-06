@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import torch
 import numpy as np
 from sklearn.metrics import average_precision_score
@@ -193,7 +192,7 @@ class MetricsCalculator:
             Dictionary of metric names to values.
         """
         if k_values is None:
-            k_values = [10, 38]
+            k_values = [10, 38]  # 38 mainly because the expedia benchmark evals on ndcg#38
 
         ctr_preds = torch.cat(self.ctr_preds)
         ctr_labels = torch.cat(self.ctr_labels)
