@@ -12,10 +12,40 @@ The model implements a two-stage ranking architecture:
 
 Key insight: `P(CTCVR) = P(CTR) × P(CVR|CTR)` enables training on the entire impression space, addressing selection bias.
 
+## Prerequisites
+
+- **Python 3.12+**
+- **[uv](https://docs.astral.sh/uv/)** — fast Python package manager
+
+### Installing uv
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or via Homebrew
+brew install uv
+```
+
+After installing, restart your terminal or run `source ~/.bashrc` (or `~/.zshrc`) so `uv` is on your PATH.
+
 ## Installation
 
 ```bash
+git clone <repo-url>
+cd esmmsearch
+
+# Create virtual environment and install all dependencies
 uv sync
+```
+
+`uv sync` creates a `.venv` in the project root automatically — no manual `venv` setup needed. To install dev dependencies (kaggle CLI, tensorboard):
+
+```bash
+uv sync --group dev
 ```
 
 ## Quick Start
