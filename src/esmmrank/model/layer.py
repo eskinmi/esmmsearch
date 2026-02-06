@@ -69,7 +69,7 @@ class MLPBlock(nn.Module):
         input_dim: int,
         hidden_dims: list[int],
         output_dim: int,
-        dropout: float = 0.3,
+        dropout: float = 0.2,
         use_batch_norm: bool = True,
         activation: str = "relu",
     ):
