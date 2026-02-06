@@ -9,7 +9,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from .config import TrainingConfig
-from .loss import ESMMLoss
+from .loss import ESMMLoss, IPSWeighter
 from .metric import MetricsCalculator
 from .model import TwoTowerESMM
 
@@ -81,11 +81,14 @@ class Trainer:
         self.device = torch.device(config.device)
         self.model.to(self.device)
 
+        ips_weighter = IPSWeighter(eta=config.ipsw_eta) if config.ipsw_enabled else None
+
         self.loss_fn = ESMMLoss(
             gamma=config.focal_gamma,
             alpha=config.focal_alpha,
             ctr_weight=config.ctr_loss_weight,
             ctcvr_weight=config.ctcvr_loss_weight,
+            ips_weighter=ips_weighter,
         )
 
         self.optimizer = AdamW(
@@ -140,6 +143,7 @@ class Trainer:
                 p_ctcvr=outputs["p_ctcvr"],
                 click_labels=batch["click_labels"],
                 conversion_labels=batch["conversion_labels"],
+                positions=batch.get("positions"),
             )
 
             self.optimizer.zero_grad()
@@ -190,6 +194,7 @@ class Trainer:
                 p_ctcvr=outputs["p_ctcvr"],
                 click_labels=batch["click_labels"],
                 conversion_labels=batch["conversion_labels"],
+                positions=batch.get("positions"),
             )
 
             total_loss += losses["total"].item()

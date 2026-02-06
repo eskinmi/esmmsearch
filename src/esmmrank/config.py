@@ -81,6 +81,8 @@ class TrainingConfig(BaseSettings):
     focal_alpha: float = 0.25
     ctr_loss_weight: float = 1.0
     ctcvr_loss_weight: float = 1.0
+    ipsw_enabled: bool = False
+    ipsw_eta: float = 1.0
     gradient_clip_norm: float = 1.0
     device: str = "cpu"
 

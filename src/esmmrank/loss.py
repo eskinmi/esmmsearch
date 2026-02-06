@@ -72,6 +72,24 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
+class IPSWeighter(nn.Module):
+    """
+    Inverse Propensity Score weighting for position bias correction.
+
+    Uses a power-law model: w(pos) = 1 / pos^eta, normalized to mean 1.
+    """
+
+    def __init__(self, eta: float = 1.0, max_position: int = 40):
+        super().__init__()
+        self.eta = eta
+        self.max_position = max_position
+
+    def forward(self, positions: torch.Tensor) -> torch.Tensor:
+        positions = positions.float().clamp(1, self.max_position)
+        weights = 1.0 / (positions ** self.eta)
+        return weights / weights.mean()
+
+
 class ESMMLoss(nn.Module):
     """
     Combined loss for ESMM training.
@@ -79,17 +97,6 @@ class ESMMLoss(nn.Module):
     Computes weighted combination of CTR loss and CTCVR loss.
     Note: CVR is not trained directly; it's implicitly learned through
     the CTCVR = CTR * CVR formulation.
-
-    Parameters
-    ----------
-    gamma : float
-        Focal loss gamma parameter.
-    alpha : float
-        Focal loss alpha parameter.
-    ctr_weight : float
-        Weight for CTR loss component.
-    ctcvr_weight : float
-        Weight for CTCVR loss component.
     """
 
     def __init__(
@@ -98,12 +105,14 @@ class ESMMLoss(nn.Module):
         alpha: float = 0.25,
         ctr_weight: float = 1.0,
         ctcvr_weight: float = 5.0,
+        ips_weighter: IPSWeighter | None = None,
     ):
         super().__init__()
-        self.ctr_loss_fn = FocalLoss(gamma=gamma, alpha=alpha)
-        self.ctcvr_loss_fn = FocalLoss(gamma=gamma, alpha=alpha)
+        self.ctr_loss_fn = FocalLoss(gamma=gamma, alpha=alpha, reduction="none")
+        self.ctcvr_loss_fn = FocalLoss(gamma=gamma, alpha=alpha, reduction="none")
         self.ctr_weight = ctr_weight
         self.ctcvr_weight = ctcvr_weight
+        self.ips_weighter = ips_weighter
 
     def forward(
         self,
@@ -111,27 +120,18 @@ class ESMMLoss(nn.Module):
         p_ctcvr: torch.Tensor,
         click_labels: torch.Tensor,
         conversion_labels: torch.Tensor,
+        positions: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
-        """
-        Parameters
-        ----------
-        p_ctr : torch.Tensor
-            Predicted click probability.
-        p_ctcvr : torch.Tensor
-            Predicted click-through conversion probability.
-        click_labels : torch.Tensor
-            Binary click labels.
-        conversion_labels : torch.Tensor
-            Binary conversion labels.
-
-        Returns
-        -------
-        dict[str, torch.Tensor]
-            Dictionary containing 'total', 'ctr', and 'ctcvr' loss values.
-        """
         ctr_loss = self.ctr_loss_fn(p_ctr, click_labels)
         ctcvr_loss = self.ctcvr_loss_fn(p_ctcvr, conversion_labels)
 
+        if self.ips_weighter is not None and positions is not None:
+            w = self.ips_weighter(positions)
+            ctr_loss = ctr_loss * w
+            ctcvr_loss = ctcvr_loss * w
+
+        ctr_loss = ctr_loss.mean()
+        ctcvr_loss = ctcvr_loss.mean()
         total_loss = self.ctr_weight * ctr_loss + self.ctcvr_weight * ctcvr_loss
 
         return {
